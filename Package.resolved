@@ -1,0 +1,14 @@
+{
+  "pins" : [
+    {
+      "identity" : "everything-at-once",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/whutao/everything-at-once.git",
+      "state" : {
+        "branch" : "master",
+        "revision" : "4da7b0fe995cd277dd88783aed0643dc04e0d9f4"
+      }
+    }
+  ],
+  "version" : 2
+}
