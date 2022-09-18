@@ -32,16 +32,20 @@ import Foundation
 
 // MARK: Wrapper
 
+/// Provides an API for a UserDefaults stored values.
 @propertyWrapper public struct UserDefault<Value> {
     
-    private let getValue: () -> Value
-    
-    private let setValue: (Value) -> Void
     
     public var wrappedValue: Value {
         get { getValue() }
         nonmutating set { setValue(newValue) }
     }
+    
+    /// Value getter.
+    private let getValue: () -> Value
+    
+    /// Value setter.
+    private let setValue: (Value) -> Void
     
 }
 
