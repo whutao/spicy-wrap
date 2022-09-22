@@ -47,29 +47,15 @@ import Foundation
     /// Value setter.
     private let setValue: (Value) -> Void
     
-}
-
-
-#if canImport(SwiftUI)
-import SwiftUI
-
-
-extension UserDefault: DynamicProperty {
-    
-}
-#endif
-
-
-// MARK: Standard types
-
-extension UserDefault {
-    
-    
     /// Common init. Should be used for standard value types.
-    private init(defaultValue: Value, _ key: String, storage: UserDefaults = .standard) {
+    private init<Key: UserDefaultKey>(
+        defaultValue: Value,
+        _ key: Key,
+        storage: UserDefaults = .standard
+    ) {
         
         getValue = {
-            if let value = storage.value(forKey: key) as? Value {
+            if let value = storage.value(forKey: key.string) as? Value {
                 return value
             } else {
                 return defaultValue
@@ -77,60 +63,68 @@ extension UserDefault {
         }
         
         setValue = { newValue in
-            storage.set(newValue, forKey: key)
+            storage.set(newValue, forKey: key.string)
         }
         
     }
     
+}
+
+
+// MARK: Standard types
+
+extension UserDefault {
+    
+    
     /// Creates a wrapper for UserDefaults storage for a standard value.
-    public init(
+    public init<Key: UserDefaultKey>(
         wrappedValue: Value,
-        _ key: String,
+        _ key: Key,
         storage: UserDefaults = .standard
     ) where Value == Int {
         self.init(defaultValue: wrappedValue, key, storage: storage)
     }
     
     /// Creates a wrapper for UserDefaults storage for a standard value.
-    public init(
+    public init<Key: UserDefaultKey>(
         wrappedValue: Value,
-        _ key: String,
+        _ key: Key,
         storage: UserDefaults = .standard
     ) where Value == Double {
         self.init(defaultValue: wrappedValue, key, storage: storage)
     }
     
     /// Creates a wrapper for UserDefaults storage for a standard value.
-    public init(
+    public init<Key: UserDefaultKey>(
         wrappedValue: Value,
-        _ key: String,
+        _ key: Key,
         storage: UserDefaults = .standard
     ) where Value == String {
         self.init(defaultValue: wrappedValue, key, storage: storage)
     }
     
     /// Creates a wrapper for UserDefaults storage for a standard value.
-    public init(
+    public init<Key: UserDefaultKey>(
         wrappedValue: Value,
-        _ key: String,
+        _ key: Key,
         storage: UserDefaults = .standard
     ) where Value == Bool {
         self.init(defaultValue: wrappedValue, key, storage: storage)
     }
     
     /// Creates a wrapper for UserDefaults storage for a standard value.
-    public init(
+    public init<Key: UserDefaultKey>(
         wrappedValue: Value,
-        _ key: String,
+        _ key: Key,
         storage: UserDefaults = .standard
     ) where Value == URL {
         self.init(defaultValue: wrappedValue, key, storage: storage)
     }
     
     /// Creates a wrapper for UserDefaults storage for a standard value.
-    public init(
+    public init<Key: UserDefaultKey>(
         wrappedValue: Value,
-        _ key: String,
+        _ key: Key,
         storage: UserDefaults = .standard
     ) where Value == Data {
         self.init(defaultValue: wrappedValue, key, storage: storage)
@@ -145,14 +139,14 @@ extension UserDefault where Value: ExpressibleByNilLiteral {
     
     
     /// Common init. Should be used for nullable standard value types.
-    private init<WrappedType>(
+    private init<WrappedType, Key: UserDefaultKey>(
         wrappedType: WrappedType.Type,
-        _ key: String,
+        _ key: Key,
         storage: UserDefaults = .standard
     ) {
         
         getValue = {
-            if let value = storage.value(forKey: key) as? Value {
+            if let value = storage.value(forKey: key.string) as? Value {
                 return value
             } else {
                 return nil
@@ -162,9 +156,9 @@ extension UserDefault where Value: ExpressibleByNilLiteral {
         setValue = { newValue in
             
             if let newValue = newValue as? WrappedType? {
-                storage.set(newValue, forKey: key)
+                storage.set(newValue, forKey: key.string)
             } else {
-                storage.removeObject(forKey: key)
+                storage.removeObject(forKey: key.string)
             }
             
         }
@@ -172,54 +166,54 @@ extension UserDefault where Value: ExpressibleByNilLiteral {
     }
     
     /// Creates a wrapper for UserDefaults storage for a standard nullable value.
-    public init(
+    public init<Key: UserDefaultKey>(
         wrappedValue: Value,
-        _ key: String,
+        _ key: Key,
         storage: UserDefaults = .standard
     ) where Value == Int? {
         self.init(defaultValue: wrappedValue, key, storage: storage)
     }
     
     /// Creates a wrapper for UserDefaults storage for a standard nullable value.
-    public init(
+    public init<Key: UserDefaultKey>(
         wrappedValue: Value,
-        _ key: String,
+        _ key: Key,
         storage: UserDefaults = .standard
     ) where Value == Double? {
         self.init(defaultValue: wrappedValue, key, storage: storage)
     }
     
     /// Creates a wrapper for UserDefaults storage for a standard nullable value.
-    public init(
+    public init<Key: UserDefaultKey>(
         wrappedValue: Value,
-        _ key: String,
+        _ key: Key,
         storage: UserDefaults = .standard
     ) where Value == String? {
         self.init(defaultValue: wrappedValue, key, storage: storage)
     }
     
     /// Creates a wrapper for UserDefaults storage for a standard nullable value.
-    public init(
+    public init<Key: UserDefaultKey>(
         wrappedValue: Value,
-        _ key: String,
+        _ key: Key,
         storage: UserDefaults = .standard
     ) where Value == Bool? {
         self.init(defaultValue: wrappedValue, key, storage: storage)
     }
     
     /// Creates a wrapper for UserDefaults storage for a standard nullable value.
-    public init(
+    public init<Key: UserDefaultKey>(
         wrappedValue: Value,
-        _ key: String,
+        _ key: Key,
         storage: UserDefaults = .standard
     ) where Value == URL? {
         self.init(defaultValue: wrappedValue, key, storage: storage)
     }
     
     /// Creates a wrapper for UserDefaults storage for a standard nullable value.
-    public init(
+    public init<Key: UserDefaultKey>(
         wrappedValue: Value,
-        _ key: String,
+        _ key: Key,
         storage: UserDefaults = .standard
     ) where Value == Data? {
         self.init(defaultValue: wrappedValue, key, storage: storage)
@@ -234,11 +228,15 @@ extension UserDefault where Value: RawRepresentable {
  
     
     /// Common init. Should be used for enums and option sets.
-    private init(defaultValue: Value, key: String, storage: UserDefaults) {
+    private init<Key: UserDefaultKey>(
+        defaultValue: Value,
+        key: Key,
+        storage: UserDefaults
+    ) {
         
         getValue = {
             
-            guard let rawValue = storage.value(forKey: key) as? Value.RawValue else {
+            guard let rawValue = storage.value(forKey: key.string) as? Value.RawValue else {
                 return defaultValue
             }
             
@@ -252,25 +250,25 @@ extension UserDefault where Value: RawRepresentable {
         
         setValue = { newValue in
             
-            storage.set(newValue.rawValue, forKey: key)
+            storage.set(newValue.rawValue, forKey: key.string)
             
         }
         
     }
     
     /// Creates a wrapper for UserDefaults storage for raw representable value.
-    public init(
+    public init<Key: UserDefaultKey>(
         wrappedValue: Value,
-        _ key: String,
+        _ key: Key,
         storage: UserDefaults = .standard
     ) where Value.RawValue == String {
         self.init(defaultValue: wrappedValue, key: key, storage: storage)
     }
     
     /// Creates a wrapper for UserDefaults storage for raw representable value.
-    public init(
+    public init<Key: UserDefaultKey>(
         wrappedValue: Value,
-        _ key: String,
+        _ key: Key,
         storage: UserDefaults = .standard
     ) where Value.RawValue == Int {
         self.init(defaultValue: wrappedValue, key: key, storage: storage)
@@ -285,13 +283,13 @@ extension UserDefault {
  
     
     /// Common init. Should be used for nullable enums and option sets.
-    private init<V: RawRepresentable>(
-        key: String,
+    private init<V: RawRepresentable, Key: UserDefaultKey>(
+        key: Key,
         storage: UserDefaults
     ) where Value == V? {
         
         getValue = {
-            if let rawValue = storage.value(forKey: key) as? V.RawValue {
+            if let rawValue = storage.value(forKey: key.string) as? V.RawValue {
                 return V(rawValue: rawValue)
             } else {
                 return nil
@@ -300,25 +298,25 @@ extension UserDefault {
         
         setValue = { newValue in
             if let newValue = newValue as V? {
-                storage.set(newValue.rawValue, forKey: key)
+                storage.set(newValue.rawValue, forKey: key.string)
             } else {
-                storage.removeObject(forKey: key)
+                storage.removeObject(forKey: key.string)
             }
         }
         
     }
     
     /// Creates a wrapper for UserDefaults storage for nullable raw representable value.
-    public init<R: RawRepresentable>(
-        _ key: String,
+    public init<R: RawRepresentable, Key: UserDefaultKey>(
+        _ key: Key,
         storage: UserDefaults = .standard
     ) where Value == R?, R.RawValue == Int {
         self.init(key: key, storage: storage)
     }
     
     /// Creates a wrapper for UserDefaults storage for nullable raw representable value.
-    public init<R: RawRepresentable>(
-        _ key: String,
+    public init<R: RawRepresentable, Key: UserDefaultKey>(
+        _ key: Key,
         storage: UserDefaults = .standard
     ) where Value == R?, R.RawValue == String {
         self.init(key: key, storage: storage)
