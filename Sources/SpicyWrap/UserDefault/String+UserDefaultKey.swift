@@ -28,7 +28,7 @@ import Foundation
 
 
 extension String: UserDefaultKey {
- 
+    
     
     public var string: String {
         return self

@@ -47,6 +47,14 @@ import Foundation
     /// Value setter.
     private let setValue: (Value) -> Void
     
+}
+
+
+// MARK: Standard types
+
+extension UserDefault {
+    
+    
     /// Common init. Should be used for standard value types.
     private init<Key: UserDefaultKey>(
         defaultValue: Value,
@@ -67,14 +75,6 @@ import Foundation
         }
         
     }
-    
-}
-
-
-// MARK: Standard types
-
-extension UserDefault {
-    
     
     /// Creates a wrapper for UserDefaults storage for a standard value.
     public init<Key: UserDefaultKey>(
@@ -128,6 +128,42 @@ extension UserDefault {
         storage: UserDefaults = .standard
     ) where Value == Data {
         self.init(defaultValue: wrappedValue, key, storage: storage)
+    }
+    
+    /// Creates a wrapper for UserDefaults storage for a standard value.
+    public init<Key: UserDefaultKey>(
+        wrappedValue defaultValue: Value,
+        _ key: Key,
+        storage: UserDefaults = .standard
+    ) where Value: Codable {
+        
+        getValue = {
+            
+            if
+                let data = storage.value(forKey: key.string) as? Data,
+                let value = try? JSONDecoder().decode(Value.self, from: data)
+            {
+            
+                return value
+                
+            } else {
+            
+                return defaultValue
+                
+            }
+            
+        }
+        
+        setValue = { newValue in
+            
+            if let data = try? JSONEncoder().encode(newValue) {
+             
+                storage.set(data, forKey: key.string)
+                
+            }
+            
+        }
+        
     }
     
 }
