@@ -2,7 +2,7 @@
 //
 //  MIT License
 //
-//  Copyright (c) 2022-Present EverythingAtOnce
+//  Copyright (c) 2022-Present SpicyWrap
 //
 //  Permission is hereby granted, free of charge, to any person obtaining a copy
 //  of this software and associated documentation files (the "Software"), to deal
