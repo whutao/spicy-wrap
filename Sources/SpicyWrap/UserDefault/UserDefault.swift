@@ -28,18 +28,37 @@
 
 #if canImport(Foundation)
 import Foundation
+#endif
+
+#if canImport(Combine)
+import Combine
+#endif
 
 
 // MARK: Wrapper
 
+#if canImport(Foundation)
 /// Provides an API for a UserDefaults stored values.
 @propertyWrapper public struct UserDefault<Value> {
-    
-    
+
     public var wrappedValue: Value {
-        get { getValue() }
-        nonmutating set { setValue(newValue) }
+        get {
+			return getValue()
+		}
+        nonmutating set {
+			setValue(newValue)
+			valueChangePublisherInternal.send(newValue)
+		}
     }
+	
+	#if canImport(Combine)
+	/// Publishes wrapped value changes and only changes. Does **not** publish the initial value.
+	public var valueChangePublisher: AnyPublisher<Value, Never> {
+		return valueChangePublisherInternal.eraseToAnyPublisher()
+	}
+	
+	private let valueChangePublisherInternal: PassthroughSubject<Value, Never> = .init()
+	#endif
     
     /// Value getter.
     private let getValue: () -> Value
@@ -53,8 +72,7 @@ import Foundation
 // MARK: Standard types
 
 extension UserDefault {
-    
-    
+
     /// Common init. Should be used for standard value types.
     private init<Key: UserDefaultKey>(
         defaultValue: Value,
